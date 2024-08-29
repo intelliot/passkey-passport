@@ -1,13 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  isAuthenticated: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ isAuthenticated }) => {
   return (
-    <header className="bg-blue-600 text-white p-4">
+    <header className="bg-primary text-white p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">Passkey Passport</Link>
         <nav>
-          <Link to="/dashboard" className="ml-4">Dashboard</Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/dashboard" className="ml-4 hover:text-primary-light">Dashboard</Link>
+              <Link to="/wallet" className="ml-4 hover:text-primary-light">Wallet</Link>
+            </>
+          ) : (
+            <Link to="/auth" className="ml-4 hover:text-primary-light">Login</Link>
+          )}
         </nav>
       </div>
     </header>

@@ -5,11 +5,13 @@ import fs from 'fs'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Comment out or remove the HTTPS configuration if not needed
-  // server: {
-  //   https: {
-  //     key: fs.readFileSync('localhost-key.pem'),
-  //     cert: fs.readFileSync('localhost-cert.pem'),
-  //   },
-  // },
+  server: {
+    https: {
+      key: fs.readFileSync('localhost-key.pem'),
+      cert: fs.readFileSync('localhost.pem'),
+    },
+  },
+  css: {
+    postcss: './postcss.config.js',
+  },
 })

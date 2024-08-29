@@ -17,8 +17,8 @@ const CreatePasskey: React.FC = () => {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-semibold mb-4">Create New Passkey</h2>
+    <div className="bg-white shadow rounded-lg p-6 mt-6">
+      <h2 className="text-2xl font-semibold mb-4 text-primary">Create New Wallet Passkey</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="passkeyName" className="block text-sm font-medium text-gray-700">
@@ -35,9 +35,9 @@ const CreatePasskey: React.FC = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="w-full bg-secondary text-white px-4 py-2 rounded-full hover:bg-secondary-dark transition duration-300"
         >
-          Create Passkey
+          Create Wallet Passkey
         </button>
       </form>
     </div>
