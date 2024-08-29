@@ -26,7 +26,7 @@ export async function createPasskey(username: string) {
   return credential;
 }
 
-export async function getPasskey(username: string) {
+export async function getPasskey() { // username: string
   const challenge = new Uint8Array(32);
   crypto.getRandomValues(challenge);
 
