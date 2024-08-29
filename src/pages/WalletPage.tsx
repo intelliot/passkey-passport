@@ -5,7 +5,7 @@ import WalletBalance from '../components/WalletBalance';
 import TransactionHistory from '../components/TransactionHistory';
 
 const WalletPage: React.FC = () => {
-  const [balance, setBalance] = useState('1000.00'); // Mock balance
+  const [balance] = useState('1000.00'); // Mock balance
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
