@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+'use client';
 
-const Home: React.FC = () => {
+import { useState } from 'react';
+
+export default function Home() {
   const [message, setMessage] = useState('');
   const [signature, setSignature] = useState('');
   const [publicKey, setPublicKey] = useState('');
+  const [balance] = useState('1000.00'); // Mock balance
   const [passkeys, setPasskeys] = useState<string[]>([]);
-  const [newPasskeyName, setNewPasskeyName] = useState('');
 
   const signMessage = async () => {
     if (!message) return;
@@ -31,11 +33,6 @@ const Home: React.FC = () => {
   };
 
   const createPasskey = async () => {
-    if (!newPasskeyName) {
-      alert('Please enter a name for the new passkey.');
-      return;
-    }
-
     try {
       const publicKeyCredential = await navigator.credentials.create({
         publicKey: {
@@ -46,8 +43,8 @@ const Home: React.FC = () => {
           },
           user: {
             id: new Uint8Array(16),
-            name: newPasskeyName,
-            displayName: newPasskeyName
+            name: "demo@example.com",
+            displayName: "Demo User"
           },
           pubKeyCredParams: [{alg: -7, type: "public-key"}],
           authenticatorSelection: {
@@ -60,8 +57,7 @@ const Home: React.FC = () => {
       }) as PublicKeyCredential;
 
       const newPasskeyId = btoa(String.fromCharCode.apply(null, new Uint8Array(publicKeyCredential.rawId)));
-      setPasskeys(prevPasskeys => [...prevPasskeys, `${newPasskeyName}: ${newPasskeyId}`]);
-      setNewPasskeyName('');
+      setPasskeys(prevPasskeys => [...prevPasskeys, newPasskeyId]);
       alert('New passkey created successfully!');
     } catch (error) {
       console.error('Error creating passkey:', error);
@@ -70,38 +66,12 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-primary">Passkey Demo</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Your Passkeys</h2>
-          {passkeys.length === 0 ? (
-            <p className="text-gray-600 mb-4">No passkeys created yet.</p>
-          ) : (
-            <ul className="list-disc pl-5 mb-4">
-              {passkeys.map((passkey, index) => (
-                <li key={index} className="text-xs break-all mb-2">{passkey}</li>
-              ))}
-            </ul>
-          )}
-          <div className="mb-4">
-            <input
-              type="text"
-              value={newPasskeyName}
-              onChange={(e) => setNewPasskeyName(e.target.value)}
-              placeholder="Enter passkey name"
-              className="border-2 border-gray-300 p-2 rounded w-full mb-2"
-            />
-            <button 
-              onClick={createPasskey}
-              className="bg-secondary text-white px-6 py-3 rounded-full hover:bg-secondary-dark transition duration-300"
-            >
-              Create New Passkey
-            </button>
-          </div>
-
-          <div className="mt-8">
+    <main className="flex min-h-screen flex-col items-center p-24">
+      <div className="max-w-5xl w-full font-mono text-sm">
+        <h1 className="text-4xl font-bold mb-8">Passkey Demo</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
             <h2 className="text-2xl font-bold mb-4">Sign Message</h2>
             <input
               type="text"
@@ -113,7 +83,7 @@ const Home: React.FC = () => {
             <button
               onClick={signMessage}
               disabled={!message}
-              className="bg-secondary text-white px-6 py-3 rounded-full hover:bg-secondary-dark transition duration-300 disabled:opacity-50"
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
             >
               Sign Message
             </button>
@@ -132,23 +102,40 @@ const Home: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Wallet</h2>
-          <div className="bg-gray-100 p-4 rounded mb-4">
-            <h3 className="text-xl font-bold mb-2">Balance</h3>
-            <p className="text-2xl font-bold text-gray-600">(not funded)</p>
-          </div>
 
           <div>
-            <h3 className="text-xl font-bold mb-2">Transaction History</h3>
-            <p className="text-gray-600">No transactions yet.</p>
+            <h2 className="text-2xl font-bold mb-4">Wallet</h2>
+            <div className="bg-gray-100 p-4 rounded mb-4">
+              <h3 className="text-xl font-bold mb-2">Balance</h3>
+              <p className="text-2xl font-bold text-green-600">${balance}</p>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold mb-2">Transaction History</h3>
+              <p className="text-gray-600">No transactions yet.</p>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
 
-export default Home;
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Your Passkeys</h2>
+          {passkeys.length === 0 ? (
+            <p className="text-gray-600 mb-4">No passkeys created yet.</p>
+          ) : (
+            <ul className="list-disc pl-5 mb-4">
+              {passkeys.map((passkey, index) => (
+                <li key={index} className="text-xs break-all mb-2">{passkey}</li>
+              ))}
+            </ul>
+          )}
+          <button 
+            onClick={createPasskey}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Create New Passkey
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
