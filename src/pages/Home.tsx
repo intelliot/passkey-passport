@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { deriveAddress, deriveKeypair } from 'xrpl';
 
 const Home: React.FC = () => {
   const [message, setMessage] = useState('');
@@ -6,6 +7,11 @@ const Home: React.FC = () => {
   const [publicKey, setPublicKey] = useState('');
   const [passkeys, setPasskeys] = useState<string[]>([]);
   const [newPasskeyName, setNewPasskeyName] = useState('');
+
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(buffer);
+    return btoa(String.fromCharCode.apply(null, bytes as unknown as number[]));
+  };
 
   const signMessage = async () => {
     if (!message) return;
@@ -19,11 +25,11 @@ const Home: React.FC = () => {
         },
       }) as PublicKeyCredential;
 
-      const rawSignature = new Uint8Array(credentials.response.signature);
-      const signatureBase64 = btoa(String.fromCharCode.apply(null, rawSignature));
+      const response = credentials.response as AuthenticatorAssertionResponse;
+      const signatureBase64 = arrayBufferToBase64(response.signature);
 
       setSignature(signatureBase64);
-      setPublicKey(btoa(String.fromCharCode.apply(null, new Uint8Array(credentials.rawId))));
+      setPublicKey(arrayBufferToBase64(credentials.rawId));
     } catch (error) {
       console.error('Error during signing:', error);
       alert('Failed to sign the message. Make sure you have a passkey set up.');
@@ -49,7 +55,9 @@ const Home: React.FC = () => {
             name: newPasskeyName,
             displayName: newPasskeyName
           },
-          pubKeyCredParams: [{alg: -7, type: "public-key"}],
+          pubKeyCredParams: [
+            {alg: -8, type: "public-key"} // Ed25519
+          ],
           authenticatorSelection: {
             authenticatorAttachment: "platform",
             userVerification: "required"
@@ -59,8 +67,14 @@ const Home: React.FC = () => {
         }
       }) as PublicKeyCredential;
 
-      const newPasskeyId = btoa(String.fromCharCode.apply(null, new Uint8Array(publicKeyCredential.rawId)));
-      setPasskeys(prevPasskeys => [...prevPasskeys, `${newPasskeyName}: ${newPasskeyId}`]);
+      const rawId = new Uint8Array(publicKeyCredential.rawId);
+      const newPasskeyId = arrayBufferToBase64(rawId);
+
+      // Derive XRPL address
+      const keypair = deriveKeypair(newPasskeyId);
+      const xrplAddress = deriveAddress(keypair.publicKey);
+
+      setPasskeys(prevPasskeys => [...prevPasskeys, `${newPasskeyName}: ${xrplAddress}`]);
       setNewPasskeyName('');
       alert('New passkey created successfully!');
     } catch (error) {
