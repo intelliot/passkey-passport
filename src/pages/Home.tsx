@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { deriveAddress, deriveKeypair } from 'xrpl';
+import { deriveAddress } from 'xrpl';
 
 const Home: React.FC = () => {
   const [message, setMessage] = useState('');
@@ -17,11 +17,40 @@ const Home: React.FC = () => {
     if (!message) return;
 
     try {
+      /**
+       * Retrieves the public key credentials.
+       * @returns {Promise<PublicKeyCredential>} The public key credentials.
+       */
       const credentials = await navigator.credentials.get({
         publicKey: {
           challenge: new Uint8Array(32),
           allowCredentials: [],
-          userVerification: 'preferred',
+          userVerification: 'preferred', // Specifies the preferred user verification method.
+          // Add the message to sign
+          extensions: {
+            txAuthSimple: message,
+          },
+        },
+      }) as PublicKeyCredential;
+
+      // Rest of the code...
+    } catch (error) {
+      console.error('Error during signing:', error);
+      alert('Failed to sign the message. Make sure you have a passkey set up.');
+    }
+
+    
+
+    try {
+      /**
+       * Retrieves the public key credentials.
+       * @returns {Promise<PublicKeyCredential>} The public key credentials.
+       */
+      const credentials = await navigator.credentials.get({
+        publicKey: {
+          challenge: new Uint8Array(32),
+          allowCredentials: [],
+          userVerification: 'preferred', // Specifies the preferred user verification method.
         },
       }) as PublicKeyCredential;
 
@@ -30,6 +59,9 @@ const Home: React.FC = () => {
 
       setSignature(signatureBase64);
       setPublicKey(arrayBufferToBase64(credentials.rawId));
+      // Public Key (Credential ID)
+      // Example: h0dq9Hebfk83bXPaxE+RNE8rhUc=
+
     } catch (error) {
       console.error('Error during signing:', error);
       alert('Failed to sign the message. Make sure you have a passkey set up.');
@@ -47,7 +79,7 @@ const Home: React.FC = () => {
         publicKey: {
           challenge: new Uint8Array(32),
           rp: {
-            name: "Passkey Demo",
+            name: "rp", // Passkey Demo
             id: window.location.hostname
           },
           user: {
@@ -62,17 +94,26 @@ const Home: React.FC = () => {
             authenticatorAttachment: "platform",
             userVerification: "required"
           },
-          timeout: 60000,
+          // timeout: 60000,
           attestation: "direct"
         }
       }) as PublicKeyCredential;
 
       const rawId = new Uint8Array(publicKeyCredential.rawId);
-      const newPasskeyId = arrayBufferToBase64(rawId);
+      // The rawId read-only property of the PublicKeyCredential interface is an ArrayBuffer object containing the identifier of the credentials.
+
 
       // Derive XRPL address
-      const keypair = deriveKeypair(newPasskeyId);
-      const xrplAddress = deriveAddress(keypair.publicKey);
+      // deriveAddress(publicKey: string) -> string
+      // Derive an XRP Ledger classic address from a hex-encoded public key string.
+
+      // Convert rawId to hex string:
+      const newPasskeyId = Array.from(rawId)
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+
+      // Derive the XRPL address using the new passkey:
+      const xrplAddress = deriveAddress(newPasskeyId);
 
       setPasskeys(prevPasskeys => [...prevPasskeys, `${newPasskeyName}: ${xrplAddress}`]);
       setNewPasskeyName('');
